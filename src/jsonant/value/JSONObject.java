@@ -83,7 +83,11 @@ public class JSONObject extends JSONValue {
 		for (final String key : other.keySet()) {
 			if (override || !object.containsKey(key)) {
 				final Object val = other.getUnsafe(key);
-				object.put(key, val);
+				if (val instanceof JSONValue) {
+					object.put(key, ((JSONValue) val).clone(this));
+				} else {
+					object.put(key, val);
+				}
 			}
 		}
 	}

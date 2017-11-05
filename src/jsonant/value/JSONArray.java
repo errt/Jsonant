@@ -222,7 +222,11 @@ public class JSONArray extends JSONValue {
 	 *            The value to add
 	 */
 	public void addUnsafe(final int index, final Object value) {
-		array.add(index, value);
+		if (value instanceof JSONValue) {
+			array.add(index, ((JSONValue) value).clone(this));
+		} else {
+			array.add(index, value);
+		}
 	}
 
 	/**
@@ -232,7 +236,11 @@ public class JSONArray extends JSONValue {
 	 *            The value to add
 	 */
 	public void addUnsafe(final Object value) {
-		array.add(value);
+		if (value instanceof JSONValue) {
+			array.add(((JSONValue) value).clone(this));
+		} else {
+			array.add(value);
+		}
 	}
 
 	/*
