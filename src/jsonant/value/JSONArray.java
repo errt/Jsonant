@@ -59,10 +59,10 @@ public class JSONArray extends JSONValue {
 	}
 
 	/**
-	 * Constructs a JSONArray from a JSONArray
+	 * Constructs a JSONArray from a given list
 	 *
 	 * @param array
-	 *            The JSONArray to encapsulate
+	 *            The list to encapsulate
 	 * @param parent
 	 *            The parent value of this JSONArray
 	 */
