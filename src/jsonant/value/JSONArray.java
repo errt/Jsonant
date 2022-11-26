@@ -124,6 +124,7 @@ public class JSONArray extends JSONValue {
 	 *            The array to add
 	 */
 	public void add(final int index, final JSONArray array) {
+		if (array.getParent() != this) throw new IllegalArgumentException("Wrong hierarchy");
 		this.array.add(index, array);
 	}
 
@@ -136,6 +137,7 @@ public class JSONArray extends JSONValue {
 	 *            The object to add
 	 */
 	public void add(final int index, final JSONObject object) {
+		if (object.getParent() != this) throw new IllegalArgumentException("Wrong hierarchy");
 		array.add(index, object);
 	}
 
@@ -594,6 +596,7 @@ public class JSONArray extends JSONValue {
 	 *            The new object
 	 */
 	public void set(final int index, final JSONArray object) {
+		if (object.getParent() != this) throw new IllegalArgumentException("Wrong hierarchy");
 		array.set(index, object);
 	}
 
@@ -606,6 +609,7 @@ public class JSONArray extends JSONValue {
 	 *            The new object
 	 */
 	public void set(final int index, final JSONObject object) {
+		if (object.getParent() != this) throw new IllegalArgumentException("Wrong hierarchy");
 		array.set(index, object);
 	}
 

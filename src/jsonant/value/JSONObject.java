@@ -397,6 +397,7 @@ public class JSONObject extends JSONValue {
 	 *            The array to put
 	 */
 	public void put(final String key, final JSONArray array) {
+		if (array.getParent() != this) throw new IllegalArgumentException("Wrong hierarchy");
 		object.put(key, array);
 	}
 
@@ -409,6 +410,7 @@ public class JSONObject extends JSONValue {
 	 *            The object to put
 	 */
 	public void put(final String key, final JSONObject object) {
+		if (object.getParent() != this) throw new IllegalArgumentException("Wrong hierarchy");
 		this.object.put(key, object);
 	}
 
