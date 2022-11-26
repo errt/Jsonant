@@ -15,6 +15,7 @@
  */
 package jsonant.value;
 
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -31,12 +32,12 @@ public abstract class JSONValue {
 	/**
 	 * Contains all classes that want to be notified on local changes to any JSONValue
 	 */
-	protected static final Map<JSONValue, Set<JSONListener>> localListeners = new IdentityHashMap<>();
+	protected static final Map<JSONValue, Set<WeakReference<JSONListener>>> localListeners = new IdentityHashMap<>();
 
 	/**
 	 * Contains all classes that want to be notified on changes to any JSONValue
 	 */
-	protected static final Map<JSONValue, Set<JSONListener>> jsonListeners = new IdentityHashMap<>();
+	protected static final Map<JSONValue, Set<WeakReference<JSONListener>>> jsonListeners = new IdentityHashMap<>();
 
 	/**
 	 * Whether this value is only to be created if it contains children
@@ -55,8 +56,7 @@ public abstract class JSONValue {
 	 *            The parent of this JSONValue
 	 */
 	protected JSONValue(final JSONValue parent) {
-		this.parent = parent;
-		onDemand = false;
+		this(parent, false);
 	}
 
 	/**
@@ -80,10 +80,10 @@ public abstract class JSONValue {
 	 */
 	public void addListener(final JSONListener listener) {
 		if (jsonListeners.containsKey(this)) {
-			jsonListeners.get(this).add(listener);
+			jsonListeners.get(this).add(new WeakReference<>(listener));
 		} else {
-			final HashSet<JSONListener> listeners = new HashSet<>();
-			listeners.add(listener);
+			final HashSet<WeakReference<JSONListener>> listeners = new HashSet<>();
+			listeners.add(new WeakReference<>(listener));
 			jsonListeners.put(this, listeners);
 		}
 	}
@@ -96,10 +96,10 @@ public abstract class JSONValue {
 	 */
 	public void addLocalListener(final JSONListener listener) {
 		if (localListeners.containsKey(this)) {
-			localListeners.get(this).add(listener);
+			localListeners.get(this).add(new WeakReference<>(listener));
 		} else {
-			final HashSet<JSONListener> listeners = new HashSet<>();
-			listeners.add(listener);
+			final HashSet<WeakReference<JSONListener>> listeners = new HashSet<>();
+			listeners.add(new WeakReference<>(listener));
 			localListeners.put(this, listeners);
 		}
 	}
@@ -134,19 +134,24 @@ public abstract class JSONValue {
 	 *            The JSONListener that initiated this change
 	 */
 	public void notifyListeners(final JSONListener initiator) {
-		final Set<JSONListener> listeners = new HashSet<>();
+		final Set<WeakReference<JSONListener>> listeners = new HashSet<>();
 		JSONValue current = this;
 		while (current != null) {
 			if (jsonListeners.containsKey(current)) {
-				listeners.addAll(jsonListeners.get(current));
+				Set<WeakReference<JSONListener>> global = jsonListeners.get(current);
+				global.removeIf(ref -> ref.get() == null);
+				listeners.addAll(global);
 			}
 			current = current.parent;
 		}
 		if (localListeners.containsKey(this)) {
-			listeners.addAll(localListeners.get(this));
+			Set<WeakReference<JSONListener>> local = localListeners.get(this);
+			local.removeIf(ref -> ref.get() == null);
+			listeners.addAll(local);
 		}
-		for (final JSONListener listener : listeners) {
-			if (listener != initiator) {
+		for (final WeakReference<JSONListener> ref : listeners) {
+			JSONListener listener = ref.get();
+			if (listener != null && listener != initiator) {
 				listener.notifyChanged(this);
 			}
 		}
@@ -168,13 +173,13 @@ public abstract class JSONValue {
 	 *            The listener to be removed
 	 */
 	public void removeListener(final JSONListener listener) {
-		Set<JSONListener> listeners = jsonListeners.get(this);
+		Set<WeakReference<JSONListener>> listeners = jsonListeners.get(this);
 		if (listeners != null) {
-			listeners.remove(listener);
+			listeners.removeIf(ref -> listener.equals(ref.get()));
 		}
 		listeners = localListeners.get(this);
 		if (listeners != null) {
-			listeners.remove(listener);
+			listeners.removeIf(ref -> listener.equals(ref.get()));
 		}
 	}
 
