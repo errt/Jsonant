@@ -350,6 +350,9 @@ public class JSONObject extends JSONValue {
 			object = ((Float) object).doubleValue();
 		}
 		for (final String key : this.object.keySet()) {
+			if (this.object.get(key) == object) return key;
+		}
+		for (final String key : this.object.keySet()) {
 			if (this.object.get(key).equals(object)) return key;
 		}
 		return null;
